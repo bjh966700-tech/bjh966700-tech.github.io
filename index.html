@@ -5,90 +5,161 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>변재엽의 작업 노트</title>
 <meta name="description" content="변재엽이 요즘 만드는 것들을 모아 둔 작업 노트입니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#f6f7f9; --text:#1f2328; --muted:#57606a; --line:#d8dce1;
-    --card:#ffffff; --accent:#1f4fbf; --accent-hover:#183f99; --chip:#f1f3f5;
+    --court:#1d3f8f;      /* 코트 바닥 파랑 */
+    --court-deep:#142d68;
+    --ball:#f26a1b;       /* 농구공 주황 */
+    --line:#ffffff;
+    --paper:#f5f7fb;
+    --ink:#14213d;
+    --muted:#566079;
+    --rule:#d5dbe7;
+    --display:"Black Han Sans","IBM Plex Sans KR",sans-serif;
+    --body:"IBM Plex Sans KR",system-ui,-apple-system,"Malgun Gothic",sans-serif;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{margin:0;background:var(--bg);color:var(--text);
-    font-family:system-ui,-apple-system,"Segoe UI","Noto Sans KR","Malgun Gothic",sans-serif;
-    line-height:1.7;font-size:16px}
-  main{max-width:680px;margin:0 auto;padding:32px 16px 64px}
-  h1{font-size:30px;line-height:1.3;margin:0 0 12px}
-  .lead{font-size:18px;color:var(--muted);margin:0 0 16px}
-  .note{font-size:14px;color:var(--muted);margin:0 0 20px}
-  .btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;
-    padding:10px 18px;border-radius:8px}
-  .btn:hover{background:var(--accent-hover)}
-  .btn:focus-visible,a:focus-visible{outline:3px solid #8db0ff;outline-offset:2px}
-  h2{font-size:22px;margin:40px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--line)}
-  p{margin:0 0 12px}
-  a{color:var(--accent)}
-  ul.works{padding-left:20px;margin:0 0 20px}
-  ul.works li{margin:6px 0}
-  .chip{display:inline-block;margin-left:6px;padding:0 9px;font-size:13px;line-height:24px;
-    border:1px solid var(--line);border-radius:999px;background:var(--chip);color:var(--text);vertical-align:1px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 18px 14px;
-    margin:0 0 16px;scroll-margin-top:16px}
-  .card:target{border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,79,191,.15)}
-  .card h3{font-size:18px;margin:0 0 4px}
-  .status{font-size:14px;color:var(--muted);margin:0 0 12px}
-  .back{font-size:15px}
-  .facts{padding-left:20px;margin:0 0 12px}
-  footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+    font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+  a{color:var(--court)}
+  a:focus-visible,.btn:focus-visible{outline:3px solid var(--ball);outline-offset:3px;border-radius:4px}
+
+  /* ---------- 코트 히어로 ---------- */
+  .hero{position:relative;overflow:hidden;background:var(--court);color:var(--line)}
+  .hero-inner{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:72px 24px 88px}
+  .court{position:absolute;right:-40px;bottom:0;width:min(640px,90vw);height:auto;z-index:0}
+  .court .ln{fill:none;stroke:var(--line);stroke-width:3;opacity:.55}
+  .court .key{fill:var(--ball);opacity:.9}
+  .court .hoop{fill:none;stroke:var(--ball);stroke-width:4}
+  h1{margin:0;font-family:var(--display);font-weight:400;line-height:1;letter-spacing:-.01em}
+  h1 .name{display:block;font-size:clamp(64px,14vw,132px)}
+  h1 .what{display:block;margin-top:18px;font-size:clamp(22px,4vw,32px);line-height:1.3}
+  .lead{max-width:30em;margin:22px 0 32px;font-size:18px;color:rgba(255,255,255,.86)}
+  .btn{display:inline-block;padding:12px 22px;border-radius:999px;background:var(--ball);color:#fff;
+    font-weight:700;text-decoration:none;transition:background .15s}
+  .btn:hover{background:#d95a10}
+
+  /* ---------- 본문 ---------- */
+  main{max-width:680px;margin:0 auto;padding:56px 24px 40px}
+  section{margin-bottom:56px}
+  h2{margin:0 0 18px;font-family:var(--display);font-weight:400;font-size:30px;line-height:1.2;
+    display:flex;align-items:center;gap:12px}
+  h2::before{content:"";flex:none;width:14px;height:14px;border-radius:50%;background:var(--ball)}
+  p{margin:0 0 14px}
+  .facts{display:grid;grid-template-columns:auto 1fr;gap:6px 20px;margin:18px 0 0;padding:16px 0;
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .facts dt{color:var(--muted)}
+  .facts dd{margin:0;font-weight:500}
+
+  /* 작업 바로가기 */
+  .jump{list-style:none;margin:0 0 28px;padding:0;display:flex;flex-wrap:wrap;gap:10px}
+  .jump a{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border:1.5px solid var(--court);
+    border-radius:999px;text-decoration:none;font-weight:500;background:#fff}
+  .jump a:hover{background:var(--court);color:#fff}
+
+  /* 작업: 상태를 공 모양으로 표시 (가득=완성, 반=진행 중, 빈 원=계획) */
+  .ball{flex:none;width:12px;height:12px;border-radius:50%;border:2px solid var(--ball)}
+  .ball.done{background:var(--ball)}
+  .ball.doing{background:linear-gradient(90deg,var(--ball) 50%,transparent 50%)}
+  .ball.plan{background:transparent}
+
+  .work{position:relative;padding:22px 0 22px 26px;border-top:1px solid var(--rule);scroll-margin-top:20px}
+  .work:last-of-type{border-bottom:1px solid var(--rule)}
+  .work::before{content:"";position:absolute;left:0;top:22px;bottom:22px;width:4px;border-radius:2px;background:var(--rule)}
+  .work.is-done::before{background:var(--ball)}
+  .work.is-doing::before{background:linear-gradient(var(--ball) 50%,var(--rule) 50%)}
+  .work:target{background:#fff;box-shadow:0 0 0 2px var(--court);border-radius:8px;padding-right:16px}
+  .work h3{margin:0;font-size:20px;line-height:1.4}
+  .status{display:flex;align-items:center;gap:8px;margin:4px 0 12px;font-size:14px;color:var(--muted)}
+  .learned{padding:10px 14px;background:#fff;border-radius:6px;font-size:15px}
+  .learned b{color:var(--court)}
+  .links{display:flex;flex-wrap:wrap;gap:8px 18px;margin:14px 0 6px}
+  .links a{font-weight:700}
+  .back{font-size:14px;color:var(--muted)}
+  code{font-size:.92em;background:#e8edf7;padding:1px 6px;border-radius:4px}
+
+  footer{max-width:680px;margin:0 auto;padding:24px 24px 48px;color:var(--muted);font-size:14px;border-top:1px solid var(--rule)}
+
+  /* 처음 열 때 코트 라인이 한 번 그려지는 효과 */
+  @media (prefers-reduced-motion:no-preference){
+    .court .ln{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.4s ease-out .15s forwards}
+    .court .key{opacity:0;animation:fade .6s ease-out 1s forwards}
+    @keyframes draw{to{stroke-dashoffset:0}}
+    @keyframes fade{to{opacity:.9}}
+  }
+  @media (max-width:640px){
+    .hero-inner{padding:56px 20px 220px}
+    .court{right:50%;transform:translateX(50%);width:115vw}
+    .court .mid{display:none}
+    main{padding:44px 20px 32px}
+    footer{padding:24px 20px 40px}
+  }
 </style>
 </head>
 <body>
-<main>
-  <header>
-    <h1>변재엽이 요즘 만드는 것들을 모아 둔 작업 노트</h1>
-    <p class="lead">같은 수업 동기가 제가 요즘 하는 작업을 1분 안에 찾아볼 수 있도록 만들었습니다.</p>
-    <p class="note">작업 상태는 실제 진행 상황 그대로 적었습니다. 아직 하지 않은 일은 ‘계획’으로 표시했습니다.</p>
-    <a class="btn" href="#works">작업 먼저 보기</a>
-  </header>
 
+<header class="hero">
+  <svg class="court" viewBox="0 0 600 400" aria-hidden="true">
+    <rect class="key" x="225" y="230" width="150" height="170"/>
+    <path class="ln" pathLength="1" d="M225 400V230H375V400"/>
+    <path class="ln" pathLength="1" d="M225 230A75 75 0 0 1 375 230"/>
+    <path class="ln" pathLength="1" d="M30 400V360A270 270 0 0 1 570 360V400"/>
+    <path class="ln mid" pathLength="1" d="M230 0A70 70 0 0 0 370 0"/>
+    <path class="ln" pathLength="1" d="M265 378H335"/>
+    <circle class="hoop" cx="300" cy="362" r="11"/>
+  </svg>
+  <div class="hero-inner">
+    <h1><span class="name">변재엽</span><span class="what">요즘 만드는 것들을 모아 둔 작업 노트</span></h1>
+    <p class="lead">같은 수업 동기가 제가 요즘 하는 작업을 1분 안에 찾아볼 수 있도록 만들었습니다.</p>
+    <a class="btn" href="#works">작업 먼저 보기</a>
+  </div>
+</header>
+
+<main>
   <section id="about">
     <h2>소개</h2>
     <p>국민대학교 경영정보학부에 다니는 변재엽입니다. 직접 만든 것을 다른 사람이 써 보는 순간에 관심이 많습니다.
       이번 학기에는 브라우저에서 바로 돌아가는 작은 웹 작업을 만들고, GitHub에 올려 친구들에게 보여 주는 연습을 하고 있습니다.</p>
-    <ul class="facts">
-      <li>학교: 국민대학교 경영정보학부</li>
-      <li>관심 분야: 농구</li>
-      <li>요즘 배우는 것: HTML · CSS · JavaScript, Git · GitHub Pages</li>
-    </ul>
+    <dl class="facts">
+      <dt>학교</dt><dd>국민대학교 경영정보학부</dd>
+      <dt>좋아하는 것</dt><dd>농구</dd>
+      <dt>요즘 배우는 것</dt><dd>HTML, CSS, JavaScript, Git과 GitHub Pages</dd>
+    </dl>
   </section>
 
   <section id="works">
     <h2>내 작업</h2>
-    <p>관심 있는 주제를 고르면 그 작업 설명으로 바로 이동합니다.</p>
-    <ul class="works">
-      <li><a href="#work-snake">Snake Arena 웹 게임</a><span class="chip">게임</span></li>
-      <li><a href="#work-profile">이 작업 노트 페이지</a><span class="chip">웹</span></li>
-      <li><a href="#work-next">앞으로 만들 이것저것</a><span class="chip">계획</span></li>
+    <p>관심 있는 작업을 누르면 설명으로 바로 이동합니다. 공 모양은 진행 상태예요. 가득 찬 공은 완성, 반만 찬 공은 진행 중, 빈 공은 계획입니다.</p>
+    <ul class="jump">
+      <li><a href="#work-snake"><span class="ball done"></span>Snake Arena 웹 게임</a></li>
+      <li><a href="#work-profile"><span class="ball doing"></span>이 작업 노트 페이지</a></li>
+      <li><a href="#work-next"><span class="ball plan"></span>앞으로 만들 이것저것</a></li>
     </ul>
 
-    <article class="card" id="work-snake">
+    <article class="work is-done" id="work-snake">
       <h3>Snake Arena 웹 게임</h3>
-      <p class="status">상태: 완성 · 계속 다듬는 중</p>
+      <p class="status"><span class="ball done"></span>완성, 계속 다듬는 중</p>
       <p>Snake.io처럼 마우스로 뱀을 움직여 먹이를 먹고 커지는 브라우저 게임입니다. HTML 파일 하나에 캔버스 그리기, AI 뱀 22마리, 리더보드와 미니맵을 모두 담았습니다.</p>
-      <p>배운 점: 설치 없이 링크 하나로 공유하려면 GitHub Pages처럼 공개된 주소에 올려야 한다는 것.</p>
-      <p><a href="https://bjh966700-tech.github.io/snake-arena/">게임 해 보기</a> · <a href="https://github.com/bjh966700-tech/snake-arena">코드 보기</a></p>
+      <p class="learned"><b>배운 점</b> 설치 없이 링크 하나로 공유하려면 GitHub Pages처럼 공개된 주소에 올려야 한다는 것.</p>
+      <p class="links"><a href="https://bjh966700-tech.github.io/snake-arena/">게임 해 보기</a><a href="https://github.com/bjh966700-tech/snake-arena">코드 보기</a></p>
       <a class="back" href="#works">작업 목록으로 돌아가기</a>
     </article>
 
-    <article class="card" id="work-profile">
+    <article class="work is-doing" id="work-profile">
       <h3>이 작업 노트 페이지</h3>
-      <p class="status">상태: 진행 중</p>
+      <p class="status"><span class="ball doing"></span>진행 중</p>
       <p>제 작업을 한곳에 모아 보여 주는 한 페이지짜리 소개 사이트입니다. 목록의 링크를 누르면 같은 페이지 안의 작업 설명으로 이동하도록 만들었습니다.</p>
-      <p>배운 점: <code>href="#아이디"</code> 링크만으로도 페이지 안에서 원하는 위치로 이동할 수 있다는 것.</p>
+      <p class="learned"><b>배운 점</b> <code>href="#아이디"</code> 링크만으로도 페이지 안에서 원하는 위치로 이동할 수 있다는 것.</p>
       <a class="back" href="#works">작업 목록으로 돌아가기</a>
     </article>
 
-    <article class="card" id="work-next">
+    <article class="work is-plan" id="work-next">
       <h3>앞으로 만들 이것저것</h3>
-      <p class="status">상태: 계획</p>
+      <p class="status"><span class="ball plan"></span>계획</p>
       <p>아직 하나로 정해 두지는 않았습니다. 수업과 일상에서 떠오르는 작은 아이디어를 이것저것 직접 만들어 보고, 완성되는 대로 이 목록에 추가할 계획입니다.</p>
       <a class="back" href="#works">작업 목록으로 돌아가기</a>
     </article>
@@ -96,10 +167,10 @@
 
   <section id="contact">
     <h2>연락하기</h2>
-    <p>작업에 대한 의견은 언제든 환영합니다. GitHub: <a href="https://github.com/bjh966700-tech">@bjh966700-tech</a></p>
+    <p>작업에 대한 의견은 언제든 환영합니다. GitHub에서 <a href="https://github.com/bjh966700-tech">@bjh966700-tech</a>를 찾아 주세요.</p>
   </section>
-
-  <footer>© 2026 변재엽 · GitHub Pages로 공개한 페이지입니다.</footer>
 </main>
+
+<footer>© 2026 변재엽. GitHub Pages로 공개한 페이지입니다.</footer>
 </body>
 </html>

@@ -135,6 +135,15 @@
   .gb-date{font-size:13px;color:var(--muted)}
   .gb-text{margin:0;white-space:pre-wrap}
   .gb-empty{color:var(--muted)}
+  .gb-auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+  .gb-auth img,.gb-avatar{width:28px;height:28px;border-radius:50%;flex:none;background:var(--rule)}
+  .gb-auth b{color:var(--ink)}
+  .gb-link{font:inherit;font-size:13px;background:none;border:0;padding:0;color:var(--court);text-decoration:underline;cursor:pointer}
+  .gb-login{font:inherit;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border:0;border-radius:999px;background:#24292f;color:#fff}
+  .gb-login svg{width:18px;height:18px;fill:currentColor}
+  .gb-head .gb-avatar{width:22px;height:22px;align-self:center}
+  .gb-del{margin-left:auto;font:inherit;font-size:13px;color:#b42318;background:none;border:1px solid #f1c4bf;border-radius:999px;padding:1px 10px;cursor:pointer}
+  .gb-del:hover{background:#fdecea}
 
   footer{max-width:680px;margin:0 auto;padding:24px 24px 48px;color:var(--muted);font-size:14px;border-top:1px solid var(--rule)}
 
@@ -237,18 +246,22 @@
 
   <section id="guestbook">
     <h2>방명록</h2>
-    <p>들렀다 가신다면 한 줄 남겨 주세요. 남긴 글은 모두에게 보입니다.</p>
-    <form class="gb-form" id="gb-form" autocomplete="off">
-      <label for="gb-name">이름</label>
-      <input id="gb-name" name="name" maxlength="20" required placeholder="예: 같은 수업 동기">
-      <label for="gb-text">남길 말</label>
-      <textarea id="gb-text" name="message" maxlength="300" required placeholder="300자까지 쓸 수 있어요"></textarea>
-      <div class="gb-hp" aria-hidden="true"><label>비워 두세요 <input name="website" tabindex="-1"></label></div>
-      <div class="gb-row">
-        <span class="gb-msg" id="gb-status" role="status"></span>
-        <button type="submit">남기기</button>
+    <p>들렀다 가신다면 한 줄 남겨 주세요. 남긴 글은 모두에게 보이고, 글쓰기는 GitHub 로그인이 필요해요.</p>
+    <div class="gb-form">
+      <div id="gb-out">
+        <p style="margin:0 0 10px;font-size:14px;color:var(--muted)">글을 남기려면 GitHub 계정으로 로그인해 주세요. 이름은 GitHub 아이디로 표시돼요.</p>
+        <button type="button" class="gb-login" id="gb-login"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub로 로그인</button>
       </div>
-    </form>
+      <form id="gb-form" hidden autocomplete="off" style="display:grid;gap:10px">
+        <div class="gb-auth"><img id="gb-me-avatar" alt=""><span><b id="gb-me"></b> 님으로 남겨요</span><button type="button" class="gb-link" id="gb-logout">로그아웃</button></div>
+        <label for="gb-text">남길 말</label>
+        <textarea id="gb-text" name="message" maxlength="300" required placeholder="300자까지 쓸 수 있어요"></textarea>
+        <div class="gb-row">
+          <span class="gb-msg" id="gb-status" role="status"></span>
+          <button type="submit">남기기</button>
+        </div>
+      </form>
+    </div>
     <ul class="gb-list" id="gb-list"><li class="gb-empty">방명록을 불러오는 중…</li></ul>
   </section>
 
@@ -288,37 +301,88 @@
   });
 })();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
   var API='/.netlify/functions/guestbook';
-  var form=document.getElementById('gb-form'), list=document.getElementById('gb-list'), status=document.getElementById('gb-status');
-  var btn=form.querySelector('button');
+  var OWNER_GITHUB_ID='321423967'; // 삭제 버튼 표시용 (실제 권한 검사는 서버에서 함)
+  var list=document.getElementById('gb-list'), form=document.getElementById('gb-form'), out=document.getElementById('gb-out');
+  var status=document.getElementById('gb-status'), btn=form.querySelector('button[type=submit]');
+  var sb=null, session=null, isOwner=false, items=[];
+  try{ sb=window.supabase.createClient('https://nkngepxwilvgcobuthjy.supabase.co','sb_publishable_JfUcCrmNwvuEAmWzZjJu1g_5IPCPRDJ'); }catch(e){}
+
   function fmt(iso){var d=new Date(iso);return d.toLocaleDateString('ko-KR',{month:'long',day:'numeric'})+' '+d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});}
-  function render(items){
+  function gh(user){return ((user&&user.identities)||[]).find(function(i){return i.provider==='github';});}
+  function authHeaders(){var h={'Content-Type':'application/json'};if(session)h.Authorization='Bearer '+session.access_token;return h;}
+
+  function render(){
     list.innerHTML='';
     if(!items.length){var e=document.createElement('li');e.className='gb-empty';e.textContent='아직 남긴 글이 없어요. 첫 글을 남겨 주세요!';list.appendChild(e);return;}
     items.forEach(function(it){
       var li=document.createElement('li'), head=document.createElement('div'), n=document.createElement('span'), d=document.createElement('span'), t=document.createElement('p');
       head.className='gb-head'; n.className='gb-name'; d.className='gb-date'; t.className='gb-text';
+      if(it.avatar_url){var im=document.createElement('img');im.className='gb-avatar';im.alt='';im.src=it.avatar_url;head.appendChild(im);}
       n.textContent=it.name; d.textContent=fmt(it.created_at); t.textContent=it.message;
-      head.appendChild(n); head.appendChild(d); li.appendChild(head); li.appendChild(t); list.appendChild(li);
+      head.appendChild(n); head.appendChild(d);
+      if(isOwner){
+        var del=document.createElement('button'); del.type='button'; del.className='gb-del'; del.textContent='삭제';
+        del.addEventListener('click',function(){ remove(it.id, del); });
+        head.appendChild(del);
+      }
+      li.appendChild(head); li.appendChild(t); list.appendChild(li);
     });
   }
   function load(){
-    return fetch(API,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json();}).then(render)
-      .catch(function(){list.innerHTML='<li class="gb-empty">방명록 서버에 연결되지 않았어요 (Netlify 배포 후 동작합니다).</li>';btn.disabled=true;});
+    return fetch(API,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json();})
+      .then(function(d){items=d;render();})
+      .catch(function(){list.innerHTML='<li class="gb-empty">방명록 서버에 연결되지 않았어요 (Netlify 배포 후 동작합니다).</li>';});
   }
+  function remove(id, el){
+    if(!confirm('이 글을 삭제할까요? 되돌릴 수 없어요.')) return;
+    el.disabled=true;
+    fetch(API+'?id='+id,{method:'DELETE',headers:authHeaders()})
+      .then(function(r){return r.json().then(function(j){if(!r.ok)throw j;return j;});})
+      .then(load).catch(function(e){alert((e&&e.error)||'삭제하지 못했어요.');el.disabled=false;});
+  }
+  function applySession(s){
+    session=s; var g=s&&gh(s.user);
+    isOwner=!!(g&&String(g.provider_id||(g.identity_data||{}).provider_id||(g.identity_data||{}).sub||g.id)===OWNER_GITHUB_ID);
+    if(g){
+      var d=g.identity_data||{};
+      document.getElementById('gb-me').textContent=d.user_name||d.preferred_username||'GitHub 사용자';
+      var av=document.getElementById('gb-me-avatar'); if(d.avatar_url){av.src=d.avatar_url;av.hidden=false;}else{av.hidden=true;}
+      out.hidden=true; form.hidden=false;
+    } else { out.hidden=false; form.hidden=true; }
+    render();
+  }
+
+  document.getElementById('gb-login').addEventListener('click',function(){
+    if(!sb){alert('로그인 기능을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.');return;}
+    try{sessionStorage.setItem('gb-return','1');}catch(e){}
+    sb.auth.signInWithOAuth({provider:'github',options:{redirectTo:location.origin+'/'}});
+  });
+  document.getElementById('gb-logout').addEventListener('click',function(){ if(sb) sb.auth.signOut(); });
+
   form.addEventListener('submit',function(ev){
     ev.preventDefault();
-    var data={name:form.name.value.trim(),message:form.message.value.trim(),website:form.website.value};
-    if(!data.name||!data.message){status.textContent='이름과 남길 말을 모두 적어 주세요.';return;}
+    var message=form.message.value.trim();
+    if(!message){status.textContent='남길 말을 적어 주세요.';return;}
     btn.disabled=true; status.textContent='저장하는 중…';
-    fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+    fetch(API,{method:'POST',headers:authHeaders(),body:JSON.stringify({message:message})})
       .then(function(r){return r.json().then(function(j){if(!r.ok)throw j;return j;});})
       .then(function(){form.message.value='';status.textContent='남겨 주셔서 고마워요!';return load();})
       .catch(function(e){status.textContent=(e&&e.error)||'저장하지 못했어요. 잠시 후 다시 시도해 주세요.';})
       .then(function(){btn.disabled=false;});
   });
+
+  if(sb){
+    sb.auth.getSession().then(function(r){applySession(r.data.session);});
+    sb.auth.onAuthStateChange(function(_e,s){
+      applySession(s);
+      var back=false; try{back=sessionStorage.getItem('gb-return')==='1';}catch(e){}
+      if(s&&back){try{sessionStorage.removeItem('gb-return');}catch(e){} document.getElementById('guestbook').scrollIntoView();}
+    });
+  }
   load();
 })();
 </script>

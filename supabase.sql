@@ -31,3 +31,11 @@ create table if not exists public.guestbook (
   created_at timestamptz not null default now()
 );
 alter table public.guestbook enable row level security;
+
+-- ===== 방명록 로그인 연동 (2026-11-05 추가) =====
+alter table public.guestbook
+  add column if not exists user_id uuid references auth.users(id) on delete set null,
+  add column if not exists avatar_url text;
+alter table public.guestbook drop constraint if exists guestbook_name_check;
+alter table public.guestbook add constraint guestbook_name_check check (char_length(name) between 1 and 40);
+-- 인증 설정(대시보드): Site URL = https://bjh-worknote.netlify.app, Redirect URL = https://bjh-worknote.netlify.app/**, GitHub provider 켜기

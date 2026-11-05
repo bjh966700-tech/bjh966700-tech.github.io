@@ -13,7 +13,10 @@ exports.handler = async (event) => {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return json(500, { error: "서버 환경 변수가 설정되지 않았습니다." });
 
-  const headers = { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
+  // 새 secret 키(sb_secret_...)는 apikey 헤더로만 보내고,
+  // 예전 service_role 키(eyJ...)는 Authorization 헤더에도 함께 보냅니다.
+  const headers = { apikey: key, "Content-Type": "application/json" };
+  if (key.startsWith("eyJ")) headers.Authorization = `Bearer ${key}`;
 
   try {
     if (event.httpMethod === "GET") {

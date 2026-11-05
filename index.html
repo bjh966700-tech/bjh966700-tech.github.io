@@ -342,7 +342,7 @@
     el.disabled=true;
     fetch(API+'?id='+id,{method:'DELETE',headers:authHeaders()})
       .then(function(r){return r.json().then(function(j){if(!r.ok)throw j;return j;});})
-      .then(load).catch(function(e){alert((e&&e.error)||'삭제하지 못했어요.');el.disabled=false;});
+      .then(function(){ items=items.filter(function(x){return x.id!==id;}); render(); }).catch(function(e){alert((e&&e.error)||'삭제하지 못했어요.');el.disabled=false;});
   }
   function applySession(s){
     session=s; var g=s&&gh(s.user);
@@ -356,10 +356,23 @@
     render();
   }
 
+  // 로그인은 작은 팝업 창에서 진행하고, 이 페이지는 그대로 둔 채 결과만 받아온다 (SPA 방식)
+  var IS_POPUP=/[?&]gb_popup=1/.test(location.search);
   document.getElementById('gb-login').addEventListener('click',function(){
     if(!sb){alert('로그인 기능을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.');return;}
-    try{sessionStorage.setItem('gb-return','1');}catch(e){}
-    sb.auth.signInWithOAuth({provider:'github',options:{redirectTo:location.origin+'/'}});
+    var w=window.open('','gb-login','width=520,height=700');
+    sb.auth.signInWithOAuth({provider:'github',options:{redirectTo:location.origin+'/?gb_popup=1',skipBrowserRedirect:true}})
+      .then(function(r){
+        var url=r.data&&r.data.url; if(!url) throw 0;
+        if(w&&!w.closed){ w.location.href=url; status.textContent=''; }
+        else { try{sessionStorage.setItem('gb-return','1');}catch(e){} location.assign(url); } // 팝업이 막히면 기존 방식으로
+      })
+      .catch(function(){ if(w) w.close(); alert('로그인을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.'); });
+  });
+  // 팝업 창이 로그인을 마쳤다고 알려 주면 세션을 다시 읽어 화면만 바꾼다
+  window.addEventListener('message',function(ev){
+    if(ev.origin!==location.origin||ev.data!=='gb-login-done'||!sb) return;
+    sb.auth.getSession().then(function(r){ applySession(r.data.session); document.getElementById('guestbook').scrollIntoView({behavior:'smooth'}); document.getElementById('gb-text').focus(); });
   });
   document.getElementById('gb-logout').addEventListener('click',function(){ if(sb) sb.auth.signOut(); });
 
@@ -370,12 +383,21 @@
     btn.disabled=true; status.textContent='저장하는 중…';
     fetch(API,{method:'POST',headers:authHeaders(),body:JSON.stringify({message:message})})
       .then(function(r){return r.json().then(function(j){if(!r.ok)throw j;return j;});})
-      .then(function(){form.message.value='';status.textContent='남겨 주셔서 고마워요!';return load();})
+      .then(function(row){form.message.value='';status.textContent='남겨 주셔서 고마워요!';items.unshift(row);render();})
       .catch(function(e){status.textContent=(e&&e.error)||'저장하지 못했어요. 잠시 후 다시 시도해 주세요.';})
       .then(function(){btn.disabled=false;});
   });
 
   if(sb){
+    if(IS_POPUP){ // 이 창이 로그인 팝업이면: 로그인 완료를 원래 창에 알리고 닫힌다
+      document.body.innerHTML='<p style="font-family:sans-serif;text-align:center;margin-top:30vh">로그인 중…</p>';
+      sb.auth.onAuthStateChange(function(_e,s){
+        if(!s) return;
+        if(window.opener&&!window.opener.closed){ window.opener.postMessage('gb-login-done',location.origin); window.close(); }
+        else { location.replace(location.origin+'/#guestbook'); }
+      });
+      return;
+    }
     sb.auth.getSession().then(function(r){applySession(r.data.session);});
     sb.auth.onAuthStateChange(function(_e,s){
       applySession(s);

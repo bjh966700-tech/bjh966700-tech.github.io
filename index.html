@@ -104,6 +104,17 @@
     color:var(--muted);background:#e8edf7;border-radius:999px;vertical-align:middle
   }
 
+
+  /* 응원 버튼 */
+  .cheer{display:flex;align-items:center;gap:12px;margin:14px 0 6px}
+  .cheer button{font:inherit;font-weight:700;cursor:pointer;padding:8px 18px;border-radius:999px;
+    border:2px solid var(--ball);background:#fff;color:var(--ball);transition:background .15s,color .15s}
+  .cheer button:hover:not(:disabled){background:var(--ball);color:#fff}
+  .cheer button:disabled{cursor:default;opacity:.65}
+  .cheer .count{color:var(--muted);font-size:15px}
+  .cheer .count b{color:var(--ink);font-size:18px}
+  .cheer .msg{font-size:13px;color:var(--muted)}
+
   footer{max-width:680px;margin:0 auto;padding:24px 24px 48px;color:var(--muted);font-size:14px;border-top:1px solid var(--rule)}
 
   /* 처음 열 때 코트 라인이 한 번 그려지는 효과 */
@@ -169,6 +180,11 @@
       <p>Snake.io처럼 마우스로 뱀을 움직여 먹이를 먹고 커지는 브라우저 게임입니다. HTML 파일 하나에 캔버스 그리기, AI 봇 22마리, 리더보드와 미니맵을 모두 담았습니다.</p>
       <p class="learned"><b>배운 점</b> 설치 없이 링크 하나로 공유하려면 GitHub Pages처럼 공개된 주소에 올려야 한다는 것.</p>
       <p class="links"><a href="https://bjh966700-tech.github.io/snake-arena/" target="_blank" rel="noopener noreferrer">게임 해 보기</a><a href="https://github.com/bjh966700-tech/snake-arena" target="_blank" rel="noopener noreferrer">코드 보기</a></p>
+      <div class="cheer" data-work="snake">
+        <button type="button" disabled aria-label="응원하기">🏀 응원하기</button>
+        <span class="count">응원 <b>–</b>개</span>
+        <span class="msg" role="status"></span>
+      </div>
       <a class="back" href="#works">작업 목록으로 돌아가기</a>
     </article>
 
@@ -177,6 +193,11 @@
       <p class="status"><span class="ball doing"></span>진행 중</p>
       <p>제 작업을 한곳에 모아 보여 주는 한 페이지짜리 소개 사이트입니다. 목록의 링크를 누르면 같은 페이지 안의 작업 설명으로 이동하도록 만들었습니다.</p>
       <p class="learned"><b>배운 점</b> <code>href="#아이디"</code> 링크만으로도 페이지 안에서 원하는 위치로 이동할 수 있다는 것.</p>
+      <div class="cheer" data-work="profile">
+        <button type="button" disabled aria-label="응원하기">🏀 응원하기</button>
+        <span class="count">응원 <b>–</b>개</span>
+        <span class="msg" role="status"></span>
+      </div>
       <a class="back" href="#works">작업 목록으로 돌아가기</a>
     </article>
 
@@ -184,6 +205,11 @@
       <h3>앞으로 만들 이것저것</h3>
       <p class="status"><span class="ball plan"></span>계획</p>
       <p>아직 하나로 정해 두지는 않았습니다. 수업과 일상에서 떠오르는 작은 아이디어를 이것저것 직접 만들어 보고, 완성되는 대로 이 목록에 추가할 계획입니다.</p>
+      <div class="cheer" data-work="next">
+        <button type="button" disabled aria-label="응원하기">🏀 응원하기</button>
+        <span class="count">응원 <b>–</b>개</span>
+        <span class="msg" role="status"></span>
+      </div>
       <a class="back" href="#works">작업 목록으로 돌아가기</a>
     </article>
   </section>
@@ -196,5 +222,33 @@
 </main>
 
 <footer>© 2026 변재엽. GitHub Pages로 공개한 페이지입니다.</footer>
+<script>
+(function(){
+  var API='/.netlify/functions/cheer';
+  var boxes=[].slice.call(document.querySelectorAll('.cheer'));
+  function setCount(box,n){box.querySelector('.count b').textContent=n;}
+  function say(box,t){box.querySelector('.msg').textContent=t||'';}
+  function done(id){try{return localStorage.getItem('cheered:'+id)==='1';}catch(e){return false;}}
+  function mark(id){try{localStorage.setItem('cheered:'+id,'1');}catch(e){}}
+
+  fetch(API).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(data){
+    boxes.forEach(function(box){
+      var id=box.dataset.work, btn=box.querySelector('button');
+      setCount(box,data[id]||0);
+      if(done(id)){btn.textContent='🏀 응원했어요';say(box,'');return;}
+      btn.disabled=false;
+      btn.addEventListener('click',function(){
+        btn.disabled=true;
+        fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({work:id})})
+          .then(function(r){if(!r.ok)throw 0;return r.json();})
+          .then(function(d){setCount(box,d.count);mark(id);btn.textContent='🏀 응원했어요';say(box,'고마워요!');})
+          .catch(function(){btn.disabled=false;say(box,'저장하지 못했어요. 잠시 후 다시 눌러 주세요.');});
+      });
+    });
+  }).catch(function(){
+    boxes.forEach(function(box){say(box,'응원 서버에 연결되지 않았어요 (Netlify 배포 후 동작합니다).');});
+  });
+})();
+</script>
 </body>
 </html>

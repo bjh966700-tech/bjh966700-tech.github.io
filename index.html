@@ -115,6 +115,27 @@
   .cheer .count b{color:var(--ink);font-size:18px}
   .cheer .msg{font-size:13px;color:var(--muted)}
 
+
+  /* 방명록 */
+  .gb-form{display:grid;gap:10px;margin:0 0 24px;padding:18px;background:#fff;border:1px solid var(--rule);border-radius:10px}
+  .gb-form label{font-size:14px;color:var(--muted);font-weight:500}
+  .gb-form input,.gb-form textarea{width:100%;font:inherit;padding:10px 12px;border:1.5px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink)}
+  .gb-form input:focus,.gb-form textarea:focus{outline:none;border-color:var(--court)}
+  .gb-form textarea{min-height:84px;resize:vertical}
+  .gb-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .gb-form button{font:inherit;font-weight:700;cursor:pointer;padding:9px 22px;border:0;border-radius:999px;background:var(--ball);color:#fff}
+  .gb-form button:disabled{opacity:.6;cursor:default}
+  .gb-msg{font-size:13px;color:var(--muted)}
+  .gb-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+  .gb-list{list-style:none;margin:0;padding:0}
+  .gb-list li{padding:14px 0;border-top:1px solid var(--rule)}
+  .gb-list li:last-child{border-bottom:1px solid var(--rule)}
+  .gb-head{display:flex;gap:10px;align-items:baseline;margin-bottom:2px}
+  .gb-name{font-weight:700}
+  .gb-date{font-size:13px;color:var(--muted)}
+  .gb-text{margin:0;white-space:pre-wrap}
+  .gb-empty{color:var(--muted)}
+
   footer{max-width:680px;margin:0 auto;padding:24px 24px 48px;color:var(--muted);font-size:14px;border-top:1px solid var(--rule)}
 
   /* 처음 열 때 코트 라인이 한 번 그려지는 효과 */
@@ -214,6 +235,23 @@
     </article>
   </section>
 
+  <section id="guestbook">
+    <h2>방명록</h2>
+    <p>들렀다 가신다면 한 줄 남겨 주세요. 남긴 글은 모두에게 보입니다.</p>
+    <form class="gb-form" id="gb-form" autocomplete="off">
+      <label for="gb-name">이름</label>
+      <input id="gb-name" name="name" maxlength="20" required placeholder="예: 같은 수업 동기">
+      <label for="gb-text">남길 말</label>
+      <textarea id="gb-text" name="message" maxlength="300" required placeholder="300자까지 쓸 수 있어요"></textarea>
+      <div class="gb-hp" aria-hidden="true"><label>비워 두세요 <input name="website" tabindex="-1"></label></div>
+      <div class="gb-row">
+        <span class="gb-msg" id="gb-status" role="status"></span>
+        <button type="submit">남기기</button>
+      </div>
+    </form>
+    <ul class="gb-list" id="gb-list"><li class="gb-empty">방명록을 불러오는 중…</li></ul>
+  </section>
+
   <section id="contact">
     <h2>연락하기</h2>
     <p>작업에 대한 의견은 언제든 환영합니다. GitHub에서 <a href="https://github.com/bjh966700-tech" target="_blank" rel="noopener noreferrer">@bjh966700-tech</a>를 찾아 주세요.</p>
@@ -248,6 +286,40 @@
   }).catch(function(){
     boxes.forEach(function(box){say(box,'응원 서버에 연결되지 않았어요 (Netlify 배포 후 동작합니다).');});
   });
+})();
+</script>
+<script>
+(function(){
+  var API='/.netlify/functions/guestbook';
+  var form=document.getElementById('gb-form'), list=document.getElementById('gb-list'), status=document.getElementById('gb-status');
+  var btn=form.querySelector('button');
+  function fmt(iso){var d=new Date(iso);return d.toLocaleDateString('ko-KR',{month:'long',day:'numeric'})+' '+d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});}
+  function render(items){
+    list.innerHTML='';
+    if(!items.length){var e=document.createElement('li');e.className='gb-empty';e.textContent='아직 남긴 글이 없어요. 첫 글을 남겨 주세요!';list.appendChild(e);return;}
+    items.forEach(function(it){
+      var li=document.createElement('li'), head=document.createElement('div'), n=document.createElement('span'), d=document.createElement('span'), t=document.createElement('p');
+      head.className='gb-head'; n.className='gb-name'; d.className='gb-date'; t.className='gb-text';
+      n.textContent=it.name; d.textContent=fmt(it.created_at); t.textContent=it.message;
+      head.appendChild(n); head.appendChild(d); li.appendChild(head); li.appendChild(t); list.appendChild(li);
+    });
+  }
+  function load(){
+    return fetch(API,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json();}).then(render)
+      .catch(function(){list.innerHTML='<li class="gb-empty">방명록 서버에 연결되지 않았어요 (Netlify 배포 후 동작합니다).</li>';btn.disabled=true;});
+  }
+  form.addEventListener('submit',function(ev){
+    ev.preventDefault();
+    var data={name:form.name.value.trim(),message:form.message.value.trim(),website:form.website.value};
+    if(!data.name||!data.message){status.textContent='이름과 남길 말을 모두 적어 주세요.';return;}
+    btn.disabled=true; status.textContent='저장하는 중…';
+    fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+      .then(function(r){return r.json().then(function(j){if(!r.ok)throw j;return j;});})
+      .then(function(){form.message.value='';status.textContent='남겨 주셔서 고마워요!';return load();})
+      .catch(function(e){status.textContent=(e&&e.error)||'저장하지 못했어요. 잠시 후 다시 시도해 주세요.';})
+      .then(function(){btn.disabled=false;});
+  });
+  load();
 })();
 </script>
 </body>

@@ -1,4 +1,5 @@
-// 방명록: 목록 조회는 누구나, 글쓰기는 GitHub 로그인한 사람만, 삭제는 사이트 주인만
+// 방명록: 목록 조회는 누구나, 글쓰기는 GitHub 로그인한 사람만,
+// 삭제는 로그인한 사람이 자기 글만 (사이트 주인은 모든 글)
 // 필요한 환경 변수: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 const PUBLISHABLE_KEY = "sb_publishable_JfUcCrmNwvuEAmWzZjJu1g_5IPCPRDJ"; // 공개용 키 (브라우저에도 노출되는 값)
 const OWNER_GITHUB_ID = process.env.OWNER_GITHUB_ID || "321423967";     // bjh966700-tech 의 GitHub 숫자 ID
@@ -42,7 +43,7 @@ exports.handler = async (event) => {
   try {
     if (event.httpMethod === "GET") {
       const r = await fetch(
-        `${url}/rest/v1/guestbook?select=id,name,message,avatar_url,created_at&order=created_at.desc&limit=50`,
+        `${url}/rest/v1/guestbook?select=id,name,message,avatar_url,user_id,created_at&order=created_at.desc&limit=50`,
         { headers }
       );
       if (!r.ok) return json(502, { error: "조회 실패" });
@@ -69,17 +70,19 @@ exports.handler = async (event) => {
 
     if (event.httpMethod === "DELETE") {
       const user = await getUser(url, event);
-      if (!user) return json(401, { error: "로그인이 필요합니다." });
-      if (user.githubId !== OWNER_GITHUB_ID) return json(403, { error: "삭제는 사이트 주인만 할 수 있어요." });
+      if (!user) return json(401, { error: "GitHub로 로그인해야 글을 삭제할 수 있어요." });
       const id = Number((event.queryStringParameters || {}).id);
       if (!Number.isInteger(id) || id <= 0) return json(400, { error: "잘못된 글 번호입니다." });
-      const r = await fetch(`${url}/rest/v1/guestbook?id=eq.${id}`, {
+      const isOwner = user.githubId === OWNER_GITHUB_ID;
+      // 주인이 아니면 "글 번호 + 내 계정" 둘 다 맞는 글만 지워진다
+      const filter = isOwner ? `id=eq.${id}` : `id=eq.${id}&user_id=eq.${user.id}`;
+      const r = await fetch(`${url}/rest/v1/guestbook?${filter}`, {
         method: "DELETE",
         headers: { ...headers, Prefer: "return=representation" },
       });
       if (!r.ok) return json(502, { error: "삭제 실패" });
       const rows = await r.json();
-      if (!rows.length) return json(404, { error: "이미 지워진 글입니다." });
+      if (!rows.length) return json(isOwner ? 404 : 403, { error: isOwner ? "이미 지워진 글입니다." : "내가 쓴 글만 삭제할 수 있어요." });
       return json(200, { deleted: id });
     }
 

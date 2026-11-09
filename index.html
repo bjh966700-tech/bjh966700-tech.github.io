@@ -43,7 +43,7 @@
   .subtitle{display:block;margin-top:18px;font-family:var(--display);font-weight:400;
     font-size:clamp(22px,4vw,32px);line-height:1.3;color:var(--line)}
   .lead{max-width:30em;margin:22px 0 32px;font-size:18px;color:rgba(255,255,255,.86)}
-  .btn{display:inline-block;padding:12px 22px;border-radius:999px;background:var(--ball);color:#fff;
+  .btn{display:inline-flex;align-items:center;min-height:48px;padding:0 26px;font-size:16px;border-radius:999px;background:var(--ball);color:#fff;
     font-weight:700;text-decoration:none;transition:background .15s}
   .btn:hover{background:#d95a10}
 
@@ -90,8 +90,15 @@
   .status{display:flex;align-items:center;gap:8px;margin:4px 0 12px;font-size:14px;color:var(--muted)}
   .learned{padding:10px 14px;background:#fff;border-radius:6px;font-size:15px}
   .learned b{color:var(--court)}
-  .links{display:flex;flex-wrap:wrap;gap:8px 18px;margin:14px 0 6px}
-  .links a{font-weight:700}
+  /* 주요 기능 버튼: 모두 같은 큰 크기 (높이 48px) */
+  .links{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 6px}
+  .act{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 24px;
+    border-radius:999px;font:inherit;font-size:16px;font-weight:700;text-decoration:none;cursor:pointer;
+    border:2px solid var(--ball);background:var(--ball);color:#fff;transition:background .15s,color .15s}
+  .act:hover{background:#d95a10;border-color:#d95a10}
+  .act.ghost{background:#fff;color:var(--court);border-color:var(--court)}
+  .act.ghost:hover{background:var(--court);color:#fff}
+  .act:focus-visible{outline:3px solid var(--ball);outline-offset:3px}
   .back{font-size:14px;color:var(--muted)}
   code{font-size:.92em;background:#e8edf7;padding:1px 6px;border-radius:4px}
 
@@ -106,8 +113,8 @@
 
 
   /* 응원 버튼 */
-  .cheer{display:flex;align-items:center;gap:12px;margin:14px 0 6px}
-  .cheer button{font:inherit;font-weight:700;cursor:pointer;padding:8px 18px;border-radius:999px;
+  .cheer{display:flex;flex-direction:row-reverse;justify-content:flex-start;align-items:center;flex-wrap:wrap;gap:12px;margin:16px 0 6px}
+  .cheer button{font:inherit;font-size:16px;font-weight:700;cursor:pointer;min-height:48px;padding:0 24px;border-radius:999px;
     border:2px solid var(--ball);background:#fff;color:var(--ball);transition:background .15s,color .15s}
   .cheer button:hover:not(:disabled){background:var(--ball);color:#fff}
   .cheer button:disabled{cursor:default;opacity:.65}
@@ -123,7 +130,7 @@
   .gb-form input:focus,.gb-form textarea:focus{outline:none;border-color:var(--court)}
   .gb-form textarea{min-height:84px;resize:vertical}
   .gb-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-  .gb-form button[type=submit]{font:inherit;font-weight:700;cursor:pointer;padding:9px 22px;border:0;border-radius:999px;background:var(--ball);color:#fff}
+  .gb-form button[type=submit]{font:inherit;font-size:16px;font-weight:700;cursor:pointer;min-height:48px;padding:0 28px;border:0;border-radius:999px;background:var(--ball);color:#fff}
   .gb-form button[type=submit]:disabled{opacity:.6;cursor:default}
   .gb-form [hidden]{display:none!important}
   #gb-form{display:grid;gap:10px}
@@ -147,7 +154,7 @@
   .gb-auth img,.gb-avatar{width:28px;height:28px;border-radius:50%;flex:none;background:var(--rule)}
   .gb-auth b{color:var(--ink)}
   .gb-link{font:inherit;font-size:13px;background:none;border:0;padding:0;color:var(--court);text-decoration:underline;cursor:pointer}
-  .gb-login{font:inherit;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border:0;border-radius:999px;background:#24292f;color:#fff}
+  .gb-login{font:inherit;font-size:16px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 24px;border:0;border-radius:999px;background:#24292f;color:#fff}
   .gb-login svg{width:18px;height:18px;fill:currentColor}
   .gb-head .gb-avatar{width:22px;height:22px;align-self:center}
   .gb-del{margin-left:auto;font:inherit;font-size:13px;color:#b42318;background:none;border:1px solid #f1c4bf;border-radius:999px;padding:1px 10px;cursor:pointer}
@@ -218,7 +225,7 @@
       <p>Snake.io처럼 마우스로 뱀을 움직여 먹이를 먹고 커지는 브라우저 게임입니다. HTML 파일 하나에 캔버스 그리기, 리더보드와 미니맵을 담았고, Supabase Realtime으로 친구들과 실시간 대결할 수 있습니다.</p>
       <p class="learned"><b>조작 방법</b><br>🖱️ <b>PC</b>: 마우스로 방향 조종, 클릭하거나 <code>스페이스바</code>를 누르고 있으면 부스트<br>📱 <b>모바일</b>: 화면을 터치해 방향 조종, 왼쪽 아래 <code>BOOST</code> 버튼으로 가속<br>🏁 <b>규칙</b>: 먹이를 먹으면 길어지고, 머리가 다른 뱀 몸이나 빨간 테두리에 닿으면 끝. 같은 링크로 들어온 친구들과 실시간으로 대결해요(봇 없음).</p>
       <p class="learned"><b>배운 점</b> 설치 없이 링크 하나로 공유하려면 GitHub Pages처럼 공개된 주소에 올려야 한다는 것.</p>
-      <p class="links"><a href="https://bjh966700-tech.github.io/snake-arena/" target="_blank" rel="noopener noreferrer">게임 해 보기</a><a href="https://github.com/bjh966700-tech/snake-arena" target="_blank" rel="noopener noreferrer">코드 보기</a></p>
+      <p class="links"><a class="act" href="https://bjh966700-tech.github.io/snake-arena/" target="_blank" rel="noopener noreferrer">🎮 게임 해 보기</a><a class="act ghost" href="https://github.com/bjh966700-tech/snake-arena" target="_blank" rel="noopener noreferrer">코드 보기</a></p>
       <div class="cheer" data-work="snake">
         <button type="button" disabled aria-label="응원하기">🏀 응원하기</button>
         <span class="count">응원 <b>–</b>개</span>
@@ -286,6 +293,7 @@
     <h2>연락하기</h2>
     <p>작업에 대한 의견은 언제든 환영합니다. GitHub에서 <a href="https://github.com/bjh966700-tech" target="_blank" rel="noopener noreferrer">@bjh966700-tech</a>를 찾아 주세요.</p>
     <p>학교 이메일 등 다른 연락처가 필요하면 GitHub를 통해 문의해 주시면 알려드리겠습니다.</p>
+    <p class="links"><a class="act ghost" href="https://github.com/bjh966700-tech" target="_blank" rel="noopener noreferrer">GitHub 프로필 보기</a></p>
   </section>
 </main>
 

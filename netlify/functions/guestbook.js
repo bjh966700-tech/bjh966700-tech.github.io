@@ -1,5 +1,5 @@
-// 방명록: 목록 조회는 누구나, 글쓰기는 GitHub 로그인한 사람만,
-// 삭제는 로그인한 사람이 자기 글만 (사이트 주인은 모든 글)
+// 방명록: 목록 조회는 누구나, 글쓰기는 GitHub 로그인 또는 손님(이름만 입력) 둘 다 가능,
+// 삭제는 로그인한 사람이 자기 글만 (사이트 주인은 모든 글, 손님 글은 주인만)
 // 필요한 환경 변수: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 const PUBLISHABLE_KEY = "sb_publishable_JfUcCrmNwvuEAmWzZjJu1g_5IPCPRDJ"; // 공개용 키 (브라우저에도 노출되는 값)
 const OWNER_GITHUB_ID = process.env.OWNER_GITHUB_ID || "321423967";     // bjh966700-tech 의 GitHub 숫자 ID
@@ -51,21 +51,33 @@ exports.handler = async (event) => {
     }
 
     if (event.httpMethod === "POST") {
-      const user = await getUser(url, event);
-      if (!user) return json(401, { error: "GitHub로 로그인한 뒤에 글을 남길 수 있어요." });
       let body;
       try { body = JSON.parse(event.body || "{}"); } catch { return json(400, { error: "잘못된 요청입니다." }); }
       const message = String(body.message || "").trim();
       if (!message || message.length > 300) return json(400, { error: "남길 말은 1~300자로 적어 주세요." });
 
+      const hasToken = /^Bearer\s+\S+/.test(event.headers.authorization || event.headers.Authorization || "");
+      let row;
+      if (hasToken) { // GitHub 로그인한 사람: 이름·사진은 GitHub 정보로
+        const user = await getUser(url, event);
+        if (!user) return json(401, { error: "로그인이 만료됐어요. 다시 로그인하거나, 로그아웃한 뒤 이름을 적어 손님으로 남겨 주세요." });
+        row = { name: user.login.slice(0, 40), message, user_id: user.id, avatar_url: user.avatar };
+      } else { // 손님: 이름만 입력
+        if (body.website) return json(200, { ok: true }); // 숨은 칸을 채우는 스팸 봇은 조용히 무시
+        const name = String(body.name || "").trim();
+        if (!name || name.length > 20) return json(400, { error: "이름은 1~20자로 적어 주세요." });
+        if (name.toLowerCase().replace(/\s/g, "") === "bjh966700-tech") return json(400, { error: "이 이름은 사이트 주인 이름이라 쓸 수 없어요." });
+        row = { name, message, user_id: null, avatar_url: null };
+      }
+
       const r = await fetch(`${url}/rest/v1/guestbook`, {
         method: "POST",
         headers: { ...headers, Prefer: "return=representation" },
-        body: JSON.stringify({ name: user.login.slice(0, 40), message, user_id: user.id, avatar_url: user.avatar }),
+        body: JSON.stringify(row),
       });
       if (!r.ok) return json(502, { error: "저장 실패" });
-      const [row] = await r.json();
-      return json(200, row);
+      const [saved] = await r.json();
+      return json(200, saved);
     }
 
     if (event.httpMethod === "DELETE") {

@@ -90,6 +90,9 @@
   .status{display:flex;align-items:center;gap:8px;margin:4px 0 12px;font-size:14px;color:var(--muted)}
   .learned{padding:10px 14px;background:#fff;border-radius:6px;font-size:15px}
   .learned b{color:var(--court)}
+  .plan{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:10px}
+  .plan li{padding:12px 14px;background:#fff;border-radius:8px;border-left:4px solid var(--ball);font-size:15px}
+  .plan li b{display:block;margin-bottom:2px;color:var(--ink)}
   /* 주요 기능 버튼: 모두 같은 큰 크기 (높이 48px) */
   .links{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 6px}
   .act{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 24px;
@@ -206,7 +209,9 @@
     <dl class="facts">
       <dt>학교</dt><dd>국민대학교 경영정보학부</dd>
       <dt>좋아하는 것</dt><dd>농구</dd>
-      <dt>요즘 배우는 것</dt><dd>HTML, CSS, JavaScript, Git과 GitHub Pages</dd>
+      <dt>요즘 배우는 것</dt><dd>HTML, CSS, JavaScript, Git과 GitHub Pages, SQL(SQLD 자격증 준비 중)</dd>
+      <dt>희망 직무</dt><dd>ERP</dd>
+      <dt>활동</dt><dd>IT 창업 동아리 ‘발자국’에서 개발 공부</dd>
     </dl>
   </section>
 
@@ -216,7 +221,7 @@
     <ul class="jump">
       <li><a href="#work-snake"><span class="ball done"></span>Snake Arena 웹 게임</a></li>
       <li><a href="#work-profile"><span class="ball doing"></span>이 작업 노트 페이지</a></li>
-      <li><a href="#work-next"><span class="ball plan"></span>앞으로 만들 이것저것</a></li>
+      <li><a href="#work-next"><span class="ball doing"></span>앞으로의 계획 (SQLD · ERP · 발자국)</a></li>
     </ul>
 
     <article class="work is-done" id="work-snake">
@@ -247,10 +252,16 @@
       <a class="back" href="#works">작업 목록으로 돌아가기</a>
     </article>
 
-    <article class="work is-plan" id="work-next">
-      <h3>앞으로 만들 이것저것</h3>
-      <p class="status"><span class="ball plan"></span>계획</p>
-      <p>아직 하나로 정해 두지는 않았습니다. 수업과 일상에서 떠오르는 작은 아이디어를 이것저것 직접 만들어 보고, 완성되는 대로 이 목록에 추가할 계획입니다.</p>
+    <article class="work is-doing" id="work-next">
+      <h3>앞으로의 계획: SQLD · ERP · 발자국</h3>
+      <p class="status"><span class="ball doing"></span>준비 중</p>
+      <p>경영정보학을 바탕으로 <b>ERP 직무</b>를 목표로 하고 있습니다. 기업의 데이터를 다루는 일을 하고 싶어서, 데이터베이스와 개발을 함께 공부하고 있습니다.</p>
+      <ul class="plan">
+        <li><b>📘 SQLD 자격증 준비</b> SQL로 데이터를 조회하고 다루는 능력을 다지는 중입니다. 기업의 데이터가 모이는 ERP를 이해하려면 데이터베이스가 기본이라고 생각했습니다.</li>
+        <li><b>👣 IT 창업 동아리 ‘발자국’</b> 소모임에서 개발을 공부하고 있습니다. 직접 서비스를 만들어 보며 이 홈페이지처럼 배운 것을 결과물로 남기고 있습니다.</li>
+        <li><b>🏢 목표: ERP 직무</b> 데이터베이스 지식과 개발 경험을 더해, 업무와 시스템을 함께 이해하는 사람이 되고 싶습니다.</li>
+      </ul>
+      <p class="learned"><b>다음에 이 목록에 올릴 것</b> SQLD 공부하며 정리한 내용, 발자국에서 만든 결과물</p>
       <div class="cheer" data-work="next">
         <button type="button" disabled aria-label="응원하기">🏀 응원하기</button>
         <span class="count">응원 <b>–</b>개</span>

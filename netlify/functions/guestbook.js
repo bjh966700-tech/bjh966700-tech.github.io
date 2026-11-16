@@ -46,7 +46,7 @@ exports.handler = async (event) => {
         `${url}/rest/v1/guestbook?select=id,name,message,avatar_url,user_id,created_at&order=created_at.desc&limit=50`,
         { headers }
       );
-      if (!r.ok) return json(502, { error: "조회 실패" });
+      if (!r.ok) { console.error("guestbook select failed", r.status, await r.text()); return json(502, { error: "조회 실패" }); }
       return json(200, await r.json());
     }
 
@@ -63,7 +63,8 @@ exports.handler = async (event) => {
         if (!user) return json(401, { error: "로그인이 만료됐어요. 다시 로그인하거나, 로그아웃한 뒤 이름을 적어 손님으로 남겨 주세요." });
         row = { name: user.login.slice(0, 40), message, user_id: user.id, avatar_url: user.avatar };
       } else { // 손님: 이름만 입력
-        if (body.website) return json(200, { ok: true }); // 숨은 칸을 채우는 스팸 봇은 조용히 무시
+        // 숨은 칸이 채워져 있으면 봇으로 보고 저장하지 않는다 (사람이 보게 될 수도 있으니 이유를 알려 줌)
+        if (body.gb_trap || body.website) return json(400, { error: "자동 입력이 감지돼 저장하지 않았어요. 새로고침한 뒤 직접 다시 써 주세요." });
         const name = String(body.name || "").trim();
         if (!name || name.length > 20) return json(400, { error: "이름은 1~20자로 적어 주세요." });
         if (name.toLowerCase().replace(/\s/g, "") === "bjh966700-tech") return json(400, { error: "이 이름은 사이트 주인 이름이라 쓸 수 없어요." });
@@ -75,7 +76,10 @@ exports.handler = async (event) => {
         headers: { ...headers, Prefer: "return=representation" },
         body: JSON.stringify(row),
       });
-      if (!r.ok) return json(502, { error: "저장 실패" });
+      if (!r.ok) {
+        console.error("guestbook insert failed", r.status, await r.text()); // Netlify 함수 로그에서 원인 확인용
+        return json(502, { error: `방명록 서버(Supabase)에 저장하지 못했어요. (코드 ${r.status}) 잠시 후 다시 시도해 주세요.` });
+      }
       const [saved] = await r.json();
       return json(200, saved);
     }
